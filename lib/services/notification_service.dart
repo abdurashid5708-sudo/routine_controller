@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tz_data;
@@ -162,18 +163,25 @@ class NotificationService {
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         payload: id.toString(),
       );
-    } catch (_) {
-      // Exact alarm permission likely not granted (common on Samsung).
-      // Fall back to inexact so the notification still fires eventually.
-      await _plugin.zonedSchedule(
-        id: id,
-        title: title,
-        body: body,
-        scheduledDate: scheduledDate,
-        notificationDetails: _buildDetails(urgent: urgent),
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        payload: id.toString(),
+      debugPrint(
+        'Notification scheduled: id=$id title=$title at=$scheduledDate',
       );
+    } catch (e) {
+      debugPrint('Exact alarm failed (id=$id): $e — falling back to inexact');
+      try {
+        await _plugin.zonedSchedule(
+          id: id,
+          title: title,
+          body: body,
+          scheduledDate: scheduledDate,
+          notificationDetails: _buildDetails(urgent: urgent),
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          payload: id.toString(),
+        );
+        debugPrint('Inexact fallback succeeded: id=$id');
+      } catch (e2) {
+        debugPrint('Inexact fallback also FAILED (id=$id): $e2');
+      }
     }
   }
 
@@ -211,5 +219,16 @@ class NotificationService {
   // ---------------------------------------------------------------------------
   static Future<void> cancelAll() async {
     await _plugin.cancelAll();
+  }
+
+  // ---------------------------------------------------------------------------
+  // ANDROID PLUGIN — used by DeviceService for channel checks
+  // ---------------------------------------------------------------------------
+  static Future<AndroidFlutterLocalNotificationsPlugin?>
+  getAndroidPlugin() async {
+    return _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
   }
 }

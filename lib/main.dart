@@ -18,6 +18,7 @@ import 'services/notification_service.dart';
 import 'services/penalty_service.dart';
 import 'services/time_block_service.dart';
 import 'services/block_list_service.dart';
+import 'services/device_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -57,6 +58,9 @@ class _RoutineControllerAppState extends State<RoutineControllerApp>
   // Permission state
   bool _hasBlockPermissions = false;
   bool _permissionBannerDismissed = false;
+  bool _batteryOptEnabled = false;
+  bool _notificationsDisabled = false;
+  bool _noExactAlarmPermission = false;
 
   // Undo state
   Mission? deletedMission;
@@ -82,11 +86,12 @@ class _RoutineControllerAppState extends State<RoutineControllerApp>
     super.dispose();
   }
 
-  // Re-check lock when app comes back to foreground
+  // Re-check lock + permissions when app comes back to foreground
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _checkLockStatus();
+      _checkPermissions();
     }
   }
 
@@ -114,12 +119,22 @@ class _RoutineControllerAppState extends State<RoutineControllerApp>
 
   // ─────────────────────────────────────────────
   // PERMISSION CHECK
-  // Shows banner if zo_app_blocker permissions not granted
+  // Shows banner if zo_app_blocker / battery / notification issues
   // ─────────────────────────────────────────────
   Future<void> _checkPermissions() async {
-    final hasPerms = await BlockListService.hasRequiredPermissions();
+    final results = await Future.wait([
+      BlockListService.hasRequiredPermissions(),
+      DeviceService.isBatteryOptimizationEnabled(),
+      DeviceService.areNotificationsEnabled(),
+      DeviceService.hasExactAlarmPermission(),
+    ]);
     if (mounted) {
-      setState(() => _hasBlockPermissions = hasPerms);
+      setState(() {
+        _hasBlockPermissions = results[0];
+        _batteryOptEnabled = results[1];
+        _notificationsDisabled = !results[2];
+        _noExactAlarmPermission = !results[3];
+      });
     }
   }
 
@@ -340,15 +355,81 @@ class _RoutineControllerAppState extends State<RoutineControllerApp>
   }
 
   // ─────────────────────────────────────────────
-  // PERMISSION BANNER
-  // Shown when zo_app_blocker permissions not granted
+  // SETTINGS BANNERS
+  // Shows warnings for battery opt / notification / block permissions
   // ─────────────────────────────────────────────
   Widget _buildPermissionBanner() {
-    if (_hasBlockPermissions || _permissionBannerDismissed) {
-      return const SizedBox.shrink();
+    final issues = <Widget>[];
+
+    if (_batteryOptEnabled && !_permissionBannerDismissed) {
+      issues.add(
+        _settingsRow(
+          icon: Icons.battery_alert_rounded,
+          message:
+              'Battery optimization may delay notifications. Disable it for reliable alerts.',
+          buttonLabel: 'Disable',
+          onPressed: () async {
+            await DeviceService.openBatteryOptimizationSettings();
+            await Future.delayed(const Duration(seconds: 2));
+            await _checkPermissions();
+          },
+        ),
+      );
     }
+
+    if (_notificationsDisabled && !_permissionBannerDismissed) {
+      issues.add(
+        _settingsRow(
+          icon: Icons.notifications_off_rounded,
+          message:
+              'Notifications are disabled. Enable them to get time block reminders.',
+          buttonLabel: 'Open Settings',
+          onPressed: () async {
+            await DeviceService.openNotificationSettings();
+            await Future.delayed(const Duration(seconds: 2));
+            await _checkPermissions();
+          },
+        ),
+      );
+    }
+
+    if (_noExactAlarmPermission && !_permissionBannerDismissed) {
+      issues.add(
+        _settingsRow(
+          icon: Icons.timer_off_rounded,
+          message:
+              'Exact alarm permission not granted. Notifications may arrive late or not at all.',
+          buttonLabel: 'Grant',
+          onPressed: () async {
+            await DeviceService.requestExactAlarmPermission();
+            await Future.delayed(const Duration(seconds: 2));
+            await _checkPermissions();
+          },
+        ),
+      );
+    }
+
+    if (!_hasBlockPermissions && !_permissionBannerDismissed) {
+      issues.add(
+        _settingsRow(
+          icon: Icons.warning_amber_rounded,
+          message:
+              'Grant permissions to block Instagram, TikTok & others during your time blocks.',
+          buttonLabel: 'Grant Permissions',
+          onPressed: () async {
+            await BlockListService.requestUsageStatsPermission();
+            await Future.delayed(const Duration(seconds: 1));
+            await BlockListService.requestOverlayPermission();
+            await _checkPermissions();
+          },
+        ),
+      );
+    }
+
+    if (issues.isEmpty) return const SizedBox.shrink();
+
     return Container(
-      margin: const EdgeInsets.all(12),
+      margin: const EdgeInsets.fromLTRB(12, 12, 12, 0),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.orange.withValues(alpha: 0.15),
@@ -357,57 +438,72 @@ class _RoutineControllerAppState extends State<RoutineControllerApp>
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          const Row(
+          ...issues,
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: () =>
+                  setState(() => _permissionBannerDismissed = true),
+              child: const Text(
+                'Dismiss All',
+                style: TextStyle(color: Colors.grey, fontSize: 11),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _settingsRow({
+    required IconData icon,
+    required String message,
+    required String buttonLabel,
+    required VoidCallback onPressed,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 18),
-              SizedBox(width: 8),
-              Text(
-                'App Blocking Not Active',
-                style: TextStyle(
-                  color: Colors.orange,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
+              Icon(icon, color: Colors.orange, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  message,
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
-          const Text(
-            'Grant permissions to block Instagram, TikTok & others during your time blocks.',
-            style: TextStyle(color: Colors.grey, fontSize: 12),
-          ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Row(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Expanded(
+              SizedBox(
+                height: 32,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange,
-                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  onPressed: () async {
-                    await BlockListService.requestUsageStatsPermission();
-                    await Future.delayed(const Duration(seconds: 1));
-                    await BlockListService.requestOverlayPermission();
-                    await _checkPermissions();
-                  },
-                  child: const Text(
-                    'Grant Permissions',
-                    style: TextStyle(color: Colors.white, fontSize: 12),
+                  onPressed: onPressed,
+                  child: Text(
+                    buttonLabel,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              TextButton(
-                onPressed: () =>
-                    setState(() => _permissionBannerDismissed = true),
-                child: const Text(
-                  'Dismiss',
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
                 ),
               ),
             ],
