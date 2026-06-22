@@ -8,6 +8,7 @@ class StatsScreen extends StatelessWidget {
   const StatsScreen({super.key, required this.missions});
 
   // Gathers completion allocations over the trailing 7 calendar days
+  // Based on the mission's startTime (since dueDate is not set in the UI)
   List<int> _getTrailing7DayData() {
     final Map<int, int> completionCounts = {};
     final today = DateTime.now();
@@ -23,11 +24,11 @@ class StatsScreen extends StatelessWidget {
     }
 
     for (var mission in missions) {
-      if (mission.isCompleted && mission.dueDate != null) {
+      if (mission.isCompleted && mission.startTime != null) {
         final dayKey = DateTime(
-          mission.dueDate!.year,
-          mission.dueDate!.month,
-          mission.dueDate!.day,
+          mission.startTime!.year,
+          mission.startTime!.month,
+          mission.startTime!.day,
         ).millisecondsSinceEpoch;
         if (completionCounts.containsKey(dayKey)) {
           completionCounts[dayKey] = completionCounts[dayKey]! + 1;

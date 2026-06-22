@@ -36,13 +36,30 @@ class MissionList extends StatelessWidget {
     final activeMissions = missions.where((m) => !m.isCompleted).toList();
     final completedMissions = missions.where((m) => m.isCompleted).toList();
 
-    // 2. Apply explicit urgency sort weights to the active allocation list
-    activeMissions.sort((a, b) {
+    // 2. Separate today's and upcoming active missions
+    final now = DateTime.now();
+    final todayMissions = activeMissions.where((m) {
+      if (m.startTime == null) return true;
+      return m.startTime!.year == now.year &&
+          m.startTime!.month == now.month &&
+          m.startTime!.day == now.day;
+    }).toList();
+    final upcomingMissions = activeMissions.where((m) {
+      if (m.startTime == null) return false;
+      return m.startTime!.year != now.year ||
+          m.startTime!.month != now.month ||
+          m.startTime!.day != now.day;
+    }).toList();
+
+    // 3. Apply explicit urgency sort weights to the active allocation list
+    todayMissions.sort((a, b) {
       int weightA = _getPriorityWeight(a.priority);
       int weightB = _getPriorityWeight(b.priority);
-      return weightB.compareTo(
-        weightA,
-      ); // Descending order (High -> Medium -> Low)
+      return weightB.compareTo(weightA);
+    });
+    upcomingMissions.sort((a, b) {
+      if (a.startTime == null || b.startTime == null) return 0;
+      return a.startTime!.compareTo(b.startTime!);
     });
 
     return AnimatedSwitcher(
@@ -66,7 +83,7 @@ class MissionList extends StatelessWidget {
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (activeMissions.isNotEmpty) ...[
+                if (todayMissions.isNotEmpty) ...[
                   const Text(
                     "Today's Schedule",
                     style: TextStyle(
@@ -76,7 +93,30 @@ class MissionList extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  ...activeMissions.map((mission) {
+                  ...todayMissions.map((mission) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: MissionTile(
+                        mission: mission,
+                        onDelete: () => onDelete(mission.id),
+                        onToggle: () => onToggle(mission.id),
+                        onEdit: () => onEdit(mission.id),
+                      ),
+                    );
+                  }),
+                ],
+                if (upcomingMissions.isNotEmpty) ...[
+                  const SizedBox(height: 20),
+                  const Text(
+                    "Upcoming",
+                    style: TextStyle(
+                      color: Colors.orangeAccent,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  ...upcomingMissions.map((mission) {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 10),
                       child: MissionTile(

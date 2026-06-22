@@ -44,13 +44,6 @@ class _RoutineControllerAppState extends State<RoutineControllerApp>
   TextEditingController missionController = TextEditingController();
   int currentIndex = 0;
 
-  // Input field state
-  String selectedCategory = 'General';
-  String selectedPriority = 'Medium';
-  DateTime? selectedDueDate;
-  TimeOfDay? selectedStartTime;
-  TimeOfDay? selectedEndTime;
-
   String selectedCategoryFilter = 'All';
   int streak = 0;
   DateTime? lastCompletedDate;
@@ -309,35 +302,39 @@ class _RoutineControllerAppState extends State<RoutineControllerApp>
   // ─────────────────────────────────────────────
   // ADD MISSION
   // ─────────────────────────────────────────────
-  void _addNewMissionFromInputs() {
-    if (missionController.text.trim().isEmpty) return;
-
-    final baseDate = selectedDueDate ?? DateTime.now();
-    final parsedStart = _combineDateTime(baseDate, selectedStartTime);
-    final parsedEnd = _combineDateTime(baseDate, selectedEndTime);
+  void _addMission(
+    String title,
+    String category,
+    String priority,
+    DateTime? dueDate,
+    TimeOfDay? start,
+    TimeOfDay? end,
+  ) {
+    final baseDate = dueDate ?? DateTime.now();
+    final parsedStart = _combineDateTime(baseDate, start);
+    final parsedEnd = _combineDateTime(baseDate, end);
+    final effectiveStart =
+        parsedStart ??
+        (dueDate != null
+            ? DateTime(dueDate.year, dueDate.month, dueDate.day, 9, 0)
+            : null);
 
     final newMission = Mission(
       id: uuid.v4(),
-      title: missionController.text.trim(),
-      category: selectedCategory,
-      dueDate: selectedDueDate,
-      priority: selectedPriority,
-      startTime: parsedStart,
+      title: title,
+      category: category,
+      dueDate: dueDate,
+      priority: priority,
+      startTime: effectiveStart,
       endTime: parsedEnd,
     );
 
     setState(() => missions.add(newMission));
 
-    // Wire into time block monitoring if start time is set
-    if (parsedStart != null) {
+    if (effectiveStart != null) {
       _startMonitoringMission(newMission);
     }
 
-    missionController.clear();
-    selectedPriority = 'Medium';
-    selectedDueDate = null;
-    selectedStartTime = null;
-    selectedEndTime = null;
     saveMissions();
     FocusScope.of(context).unfocus();
   }
@@ -521,22 +518,13 @@ class _RoutineControllerAppState extends State<RoutineControllerApp>
         dueTodayCount: dueTodayCount,
         highPriorityCount: highPriorityCount,
         missions: categoryFilteredMissions,
-        selectedPriority: selectedPriority,
-        onPriorityChanged: (p) => setState(() => selectedPriority = p),
-        selectedCategory: selectedCategory,
         selectedCategoryFilter: selectedCategoryFilter,
         onCategoryFilterChanged: (c) =>
             setState(() => selectedCategoryFilter = c),
-        onCategoryChanged: (c) => setState(() => selectedCategory = c),
         totalMissionCount: missions.length,
         completedCount: completedCount,
         missionController: missionController,
-        selectedStartTime: selectedStartTime,
-        selectedEndTime: selectedEndTime,
-        onStartTimeChanged: (t) => setState(() => selectedStartTime = t),
-        onEndTimeChanged: (t) => setState(() => selectedEndTime = t),
-        onAddMission: _addNewMissionFromInputs,
-        onSubmitted: (_) => _addNewMissionFromInputs(),
+        onAddMission: _addMission,
         onDelete: (id) {
           final idx = missions.indexWhere((m) => m.id == id);
           if (idx == -1) return;
@@ -632,22 +620,14 @@ class _RoutineControllerAppState extends State<RoutineControllerApp>
                             dropdownColor: const Color(0xFF1E1E1E),
                             isExpanded: true,
                             style: const TextStyle(color: Colors.white),
-                            items:
-                                [
-                                      'General',
-                                      'Work',
-                                      'Study',
-                                      'Fitness',
-                                      'Sleep',
-                                      'Meal',
-                                    ]
-                                    .map(
-                                      (v) => DropdownMenuItem(
-                                        value: v,
-                                        child: Text(v),
-                                      ),
-                                    )
-                                    .toList(),
+                            items: ['General', 'Work', 'Study', 'Fitness']
+                                .map(
+                                  (v) => DropdownMenuItem(
+                                    value: v,
+                                    child: Text(v),
+                                  ),
+                                )
+                                .toList(),
                             onChanged: (v) {
                               if (v != null) {
                                 setDialogState(() => selectedEditCategory = v);

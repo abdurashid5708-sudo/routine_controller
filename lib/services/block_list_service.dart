@@ -25,9 +25,9 @@ class BlockListService {
     'com.instagram.android',
     'com.facebook.katana',
     'com.zhiliaoapp.musically', // TikTok
-    'com.twitter.android',
-    'com.snapchat.android',
     'com.google.android.youtube',
+    'com.iMe.android',
+    'org.telegram.messenger',
   ];
 
   // ─────────────────────────────────────────────

@@ -2,6 +2,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 import 'notification_service.dart';
 import 'penalty_service.dart';
+import 'block_list_service.dart';
 
 // ─────────────────────────────────────────────────────────────
 // BACKGROUND TASK NAME — must match callbackDispatcher in main.dart
@@ -68,6 +69,16 @@ class TimeBlockService {
       missionTitle: missionTitle,
       startTime: startTime,
     );
+
+    // Block distracting apps only if the mission is for today
+    final now = DateTime.now();
+    final isToday =
+        startTime.year == now.year &&
+        startTime.month == now.month &&
+        startTime.day == now.day;
+    if (isToday) {
+      await BlockListService.blockDistractions();
+    }
 
     // Schedule background penalty check 30 min after start
     // workmanager will run this even if the app is fully closed

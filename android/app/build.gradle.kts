@@ -13,7 +13,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-        // Use the assignment operator (=) and wrap in parentheses for KTS
         isCoreLibraryDesugaringEnabled = true 
     }
 
@@ -22,13 +21,19 @@ android {
     }
 
    defaultConfig {
-    applicationId "com.example.routine_controller"
-    minSdkVersion 21 // Change this to 21
-    targetSdkVersion flutter.targetSdkVersion
-    versionCode flutterVersionCode.toInteger()
-    versionName flutterVersionName
-}
-    // ... rest of your buildTypes ...
+        applicationId = "com.example.routine_controller"
+        minSdk = flutter.minSdkVersion
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+    }
+
+    buildTypes {
+        release {
+            // Signing with the debug keys for now, so `flutter run --release` works.
+            signingConfig = signingConfigs.getByName("debug")
+        }
+    }
 }
 
 flutter {
@@ -36,5 +41,5 @@ flutter {
 }
 
 dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }

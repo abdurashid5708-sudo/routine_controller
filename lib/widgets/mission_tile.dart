@@ -15,10 +15,12 @@ class MissionTile extends StatelessWidget {
     required this.onEdit,
   });
 
-  Color _getPriorityColor(String priority) {
-    switch (priority) {
+  Color get _priorityColor {
+    switch (mission.priority) {
       case 'High':
         return Colors.redAccent;
+      case 'Medium':
+        return Colors.amber;
       case 'Low':
         return Colors.grey;
       default:
@@ -26,16 +28,36 @@ class MissionTile extends StatelessWidget {
     }
   }
 
+  Color get _priorityBg {
+    return _priorityColor.withValues(alpha: 0.1);
+  }
+
+  Color get _priorityBorder {
+    return _priorityColor.withValues(alpha: 0.3);
+  }
+
   @override
   Widget build(BuildContext context) {
-    String timeDisplay = "";
+    String timeDisplay = '';
     if (mission.startTime != null && mission.endTime != null) {
       final startStr =
-          "${mission.startTime!.hour.toString().padLeft(2, '0')}:${mission.startTime!.minute.toString().padLeft(2, '0')}";
+          '${mission.startTime!.hour.toString().padLeft(2, '0')}:${mission.startTime!.minute.toString().padLeft(2, '0')}';
       final endStr =
-          "${mission.endTime!.hour.toString().padLeft(2, '0')}:${mission.endTime!.minute.toString().padLeft(2, '0')}";
-      timeDisplay = "⏰ $startStr - $endStr";
+          '${mission.endTime!.hour.toString().padLeft(2, '0')}:${mission.endTime!.minute.toString().padLeft(2, '0')}';
+      final now = DateTime.now();
+      final isFutureDate =
+          mission.startTime!.year != now.year ||
+          mission.startTime!.month != now.month ||
+          mission.startTime!.day != now.day;
+      if (isFutureDate) {
+        timeDisplay =
+            '📅 ${mission.startTime!.day}.${mission.startTime!.month}  $startStr - $endStr';
+      } else {
+        timeDisplay = '⏰ $startStr - $endStr';
+      }
     }
+
+    final isCompleted = mission.isCompleted;
 
     return Dismissible(
       key: ValueKey(mission.id),
@@ -53,41 +75,84 @@ class MissionTile extends StatelessWidget {
         onTap: onToggle,
         onLongPress: onEdit,
         borderRadius: BorderRadius.circular(15),
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFF1E1E1E),
+            color: isCompleted
+                ? Colors.green.withValues(alpha: 0.06)
+                : _priorityBg,
             borderRadius: BorderRadius.circular(15),
             border: Border.all(
-              color: mission.isCompleted
+              color: isCompleted
                   ? Colors.green.withValues(alpha: 0.3)
-                  : Colors.transparent,
+                  : _priorityBorder,
+              width: 1.2,
             ),
+            boxShadow: isCompleted
+                ? []
+                : [
+                    BoxShadow(
+                      color: _priorityColor.withValues(alpha: 0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
           ),
           child: Row(
             children: [
-              Icon(
-                mission.isCompleted
-                    ? Icons.check_circle
-                    : Icons.radio_button_unchecked,
-                color: mission.isCompleted ? Colors.green : Colors.grey,
-                size: 24,
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: 26,
+                height: 26,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isCompleted ? Colors.green : Colors.transparent,
+                  border: Border.all(
+                    color: isCompleted
+                        ? Colors.green
+                        : _priorityColor.withValues(alpha: 0.5),
+                    width: 2,
+                  ),
+                ),
+                child: isCompleted
+                    ? const Icon(Icons.check, color: Colors.white, size: 16)
+                    : null,
               ),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      mission.title,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        decoration: mission.isCompleted
-                            ? TextDecoration.lineThrough
-                            : null,
-                      ),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            mission.title,
+                            style: TextStyle(
+                              color: isCompleted
+                                  ? Colors.grey[500]
+                                  : Colors.white,
+                              fontSize: 16,
+                              fontWeight: isCompleted
+                                  ? FontWeight.normal
+                                  : FontWeight.w600,
+                              decoration: isCompleted
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                              decorationColor: Colors.grey[500],
+                            ),
+                          ),
+                        ),
+                        if (!isCompleted && mission.priority == 'High')
+                          const SizedBox(width: 8),
+                        if (!isCompleted && mission.priority == 'High')
+                          Icon(
+                            Icons.bolt,
+                            color: Colors.redAccent.withValues(alpha: 0.6),
+                            size: 16,
+                          ),
+                      ],
                     ),
                     const SizedBox(height: 8),
                     Wrap(
@@ -118,15 +183,17 @@ class MissionTile extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: _getPriorityColor(
-                              mission.priority,
-                            ).withValues(alpha: 0.15),
+                            color: isCompleted
+                                ? Colors.grey.withValues(alpha: 0.1)
+                                : _priorityBg,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             mission.priority.toUpperCase(),
                             style: TextStyle(
-                              color: _getPriorityColor(mission.priority),
+                              color: isCompleted
+                                  ? Colors.grey[600]
+                                  : _priorityColor,
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
@@ -139,13 +206,17 @@ class MissionTile extends StatelessWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.05),
+                              color: isCompleted
+                                  ? Colors.grey.withValues(alpha: 0.08)
+                                  : Colors.white.withValues(alpha: 0.05),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
                               timeDisplay,
                               style: TextStyle(
-                                color: Colors.grey[400],
+                                color: isCompleted
+                                    ? Colors.grey[600]
+                                    : Colors.grey[400],
                                 fontSize: 11,
                               ),
                             ),

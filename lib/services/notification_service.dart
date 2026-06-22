@@ -152,15 +152,29 @@ class NotificationService {
     required tz.TZDateTime scheduledDate,
     bool urgent = false,
   }) async {
-    await _plugin.zonedSchedule(
-      id: id,
-      title: title,
-      body: body,
-      scheduledDate: scheduledDate,
-      notificationDetails: _buildDetails(urgent: urgent),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      payload: id.toString(),
-    );
+    try {
+      await _plugin.zonedSchedule(
+        id: id,
+        title: title,
+        body: body,
+        scheduledDate: scheduledDate,
+        notificationDetails: _buildDetails(urgent: urgent),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        payload: id.toString(),
+      );
+    } catch (_) {
+      // Exact alarm permission likely not granted (common on Samsung).
+      // Fall back to inexact so the notification still fires eventually.
+      await _plugin.zonedSchedule(
+        id: id,
+        title: title,
+        body: body,
+        scheduledDate: scheduledDate,
+        notificationDetails: _buildDetails(urgent: urgent),
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        payload: id.toString(),
+      );
+    }
   }
 
   // ---------------------------------------------------------------------------
