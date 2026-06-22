@@ -20,7 +20,6 @@ class HomeScreen extends StatelessWidget {
   final String selectedCategoryFilter;
   final Function(String) onCategoryFilterChanged;
 
- 
   final String selectedPriority;
   final Function(String) onPriorityChanged;
 
@@ -72,7 +71,7 @@ class HomeScreen extends StatelessWidget {
       'Meal',
     ];
 
-    return Scaffold( 
+    return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(

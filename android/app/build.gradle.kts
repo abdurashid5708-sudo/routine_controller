@@ -21,13 +21,13 @@ android {
         jvmTarget = "17"
     }
 
-    defaultConfig {
-        applicationId = "com.example.routine_controller"
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
-    }
+   defaultConfig {
+    applicationId "com.example.routine_controller"
+    minSdkVersion 21 // Change this to 21
+    targetSdkVersion flutter.targetSdkVersion
+    versionCode flutterVersionCode.toInteger()
+    versionName flutterVersionName
+}
     // ... rest of your buildTypes ...
 }
 
