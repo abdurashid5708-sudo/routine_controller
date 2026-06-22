@@ -53,7 +53,7 @@ class ProfileScreen extends StatelessWidget {
               const Text(
                 "Operator Profile",
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.onSurface,
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                 ),
@@ -86,13 +86,13 @@ class ProfileScreen extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(6),
                           decoration: const BoxDecoration(
-                            color: Colors.orange,
+                            color: AppColors.secondary,
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
                             Icons.bolt,
                             size: 16,
-                            color: Colors.white,
+                            color: AppColors.onSurface,
                           ),
                         ),
                       ],
@@ -101,7 +101,7 @@ class ProfileScreen extends StatelessWidget {
                     Text(
                       rank,
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: AppColors.onSurface,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
@@ -110,7 +110,7 @@ class ProfileScreen extends StatelessWidget {
                     Text(
                       "Current Streak: $streak Days 🔥",
                       style: const TextStyle(
-                        color: Colors.orangeAccent,
+                        color: AppColors.secondary,
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
@@ -136,7 +136,7 @@ class ProfileScreen extends StatelessWidget {
                         const Text(
                           "Rank Experience",
                           style: TextStyle(
-                            color: Colors.grey,
+                            color: AppColors.onSurfaceVariant,
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
@@ -152,7 +152,10 @@ class ProfileScreen extends StatelessWidget {
                         else
                           const Text(
                             "Max Rank Achieved",
-                            style: TextStyle(color: Colors.amber, fontSize: 12),
+                            style: TextStyle(
+                              color: AppColors.secondary,
+                              fontSize: 12,
+                            ),
                           ),
                       ],
                     ),
@@ -161,7 +164,7 @@ class ProfileScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10),
                       child: LinearProgressIndicator(
                         value: progress,
-                        backgroundColor: Colors.grey[900],
+                        backgroundColor: AppColors.surfaceContainerLow,
                         color: AppColors.primary,
                         minHeight: 10,
                       ),
@@ -174,7 +177,7 @@ class ProfileScreen extends StatelessWidget {
               const Text(
                 "System Operational Statistics",
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.onSurface,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -234,7 +237,7 @@ class ProfileScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.card,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.02)),
+        border: Border.all(color: AppColors.onSurface.withValues(alpha: 0.02)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -243,7 +246,7 @@ class ProfileScreen extends StatelessWidget {
           Text(
             label,
             style: const TextStyle(
-              color: Colors.grey,
+              color: AppColors.onSurfaceVariant,
               fontSize: 11,
               fontWeight: FontWeight.bold,
             ),
@@ -260,7 +263,10 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             subtitle,
-            style: TextStyle(color: Colors.grey[500], fontSize: 11),
+            style: TextStyle(
+              color: AppColors.onSurfaceVariant.withValues(alpha: 0.7),
+              fontSize: 11,
+            ),
           ),
         ],
       ),

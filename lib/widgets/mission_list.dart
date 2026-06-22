@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/mission.dart';
 import '../widgets/mission_tile.dart';
+import '../theme/app_colors.dart';
 
 class MissionList extends StatelessWidget {
   final List<Mission> missions;
@@ -70,11 +71,18 @@ class MissionList extends StatelessWidget {
                 padding: EdgeInsets.all(30),
                 child: Column(
                   children: [
-                    Icon(Icons.track_changes, size: 70, color: Colors.grey),
+                    Icon(
+                      Icons.track_changes,
+                      size: 70,
+                      color: AppColors.onSurfaceVariant,
+                    ),
                     SizedBox(height: 20),
                     Text(
                       "No schedule items logged yet",
-                      style: TextStyle(color: Colors.grey, fontSize: 16),
+                      style: TextStyle(
+                        color: AppColors.onSurfaceVariant,
+                        fontSize: 16,
+                      ),
                     ),
                   ],
                 ),
@@ -87,7 +95,7 @@ class MissionList extends StatelessWidget {
                   const Text(
                     "Today's Schedule",
                     style: TextStyle(
-                      color: Colors.white,
+                      color: AppColors.onSurface,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -110,7 +118,7 @@ class MissionList extends StatelessWidget {
                   const Text(
                     "Upcoming",
                     style: TextStyle(
-                      color: Colors.orangeAccent,
+                      color: AppColors.secondary,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -133,7 +141,7 @@ class MissionList extends StatelessWidget {
                   const Text(
                     "Completed Blocks",
                     style: TextStyle(
-                      color: Colors.green,
+                      color: AppColors.primary,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),

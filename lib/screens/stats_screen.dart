@@ -57,7 +57,7 @@ class StatsScreen extends StatelessWidget {
               const Text(
                 "Analytics Engine",
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.onSurface,
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                 ),
@@ -65,7 +65,10 @@ class StatsScreen extends StatelessWidget {
               const SizedBox(height: 6),
               const Text(
                 "Rolling performance matrices and historical tracking.",
-                style: TextStyle(color: Colors.grey, fontSize: 14),
+                style: TextStyle(
+                  color: AppColors.onSurfaceVariant,
+                  fontSize: 14,
+                ),
               ),
               const SizedBox(height: 30),
 
@@ -73,8 +76,11 @@ class StatsScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: AppColors.card,
-                  borderRadius: BorderRadius.circular(20),
+                  color: AppColors.surfaceContainerLow.withValues(alpha: 0.8),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: AppColors.onSurface.withValues(alpha: 0.08),
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,7 +88,7 @@ class StatsScreen extends StatelessWidget {
                     const Text(
                       "7-Day Output Trend",
                       style: TextStyle(
-                        color: Colors.white,
+                        color: AppColors.onSurface,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -145,7 +151,7 @@ class StatsScreen extends StatelessWidget {
               const Text(
                 "Efficiency Distribution",
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.onSurface,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -165,8 +171,11 @@ class StatsScreen extends StatelessWidget {
                   margin: const EdgeInsets.only(bottom: 12),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppColors.card,
-                    borderRadius: BorderRadius.circular(15),
+                    color: AppColors.surfaceContainerLow.withValues(alpha: 0.8),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppColors.onSurface.withValues(alpha: 0.06),
+                    ),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -174,14 +183,16 @@ class StatsScreen extends StatelessWidget {
                       Text(
                         category,
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: AppColors.onSurface,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       Text(
                         "${(ratio * 100).toStringAsFixed(0)}% Done ($catDone/$catTotal)",
                         style: TextStyle(
-                          color: ratio > 0.7 ? Colors.green : Colors.amber,
+                          color: ratio > 0.7
+                              ? AppColors.primary
+                              : AppColors.secondary,
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
                         ),

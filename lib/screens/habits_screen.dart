@@ -52,7 +52,7 @@ class _HabitScreenState extends State<HabitScreen> {
               const Text(
                 "Atomic Habits",
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.onSurface,
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                 ),
@@ -70,13 +70,15 @@ class _HabitScreenState extends State<HabitScreen> {
                   Expanded(
                     child: TextField(
                       controller: _habitController,
-                      style: const TextStyle(color: Colors.white),
+                      style: const TextStyle(color: AppColors.onSurface),
                       onSubmitted: (_) => _submitHabit(),
                       decoration: InputDecoration(
                         hintText: "Build a new daily ritual...",
-                        hintStyle: const TextStyle(color: Colors.grey),
+                        hintStyle: const TextStyle(
+                          color: AppColors.onSurfaceVariant,
+                        ),
                         filled: true,
-                        fillColor: AppColors.card,
+                        fillColor: AppColors.surfaceContainer,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(15),
                           borderSide: BorderSide.none,
@@ -114,13 +116,13 @@ class _HabitScreenState extends State<HabitScreen> {
                             Icon(
                               Icons.repeat_on_rounded,
                               size: 64,
-                              color: Colors.grey[800],
+                              color: AppColors.surfaceContainerHigh,
                             ),
                             const SizedBox(height: 16),
                             const Text(
                               "No daily habits tracking yet",
                               style: TextStyle(
-                                color: Colors.grey,
+                                color: AppColors.onSurfaceVariant,
                                 fontSize: 16,
                               ),
                             ),
@@ -152,14 +154,18 @@ class _HabitScreenState extends State<HabitScreen> {
                             ),
                             child: Container(
                               margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.all(16),
+                              padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
-                                color: AppColors.card,
-                                borderRadius: BorderRadius.circular(16),
+                                color: AppColors.surfaceContainerLow.withValues(
+                                  alpha: 0.8,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color: habit.isCompletedToday
                                       ? AppColors.primary.withValues(alpha: 0.3)
-                                      : Colors.transparent,
+                                      : AppColors.onSurface.withValues(
+                                          alpha: 0.06,
+                                        ),
                                 ),
                               ),
                               child: Row(
@@ -172,7 +178,7 @@ class _HabitScreenState extends State<HabitScreen> {
                                           : Icons.radio_button_unchecked,
                                       color: habit.isCompletedToday
                                           ? AppColors.primary
-                                          : Colors.grey,
+                                          : AppColors.onSurfaceVariant,
                                       size: 28,
                                     ),
                                     onPressed: () =>
@@ -187,7 +193,7 @@ class _HabitScreenState extends State<HabitScreen> {
                                         Text(
                                           habit.title,
                                           style: TextStyle(
-                                            color: Colors.white,
+                                            color: AppColors.onSurface,
                                             fontSize: 16,
                                             fontWeight: FontWeight.w600,
                                             decoration: habit.isCompletedToday
@@ -200,8 +206,8 @@ class _HabitScreenState extends State<HabitScreen> {
                                           "Streak: ${habit.streak} days 🔥",
                                           style: TextStyle(
                                             color: habit.streak > 0
-                                                ? Colors.orangeAccent
-                                                : Colors.grey,
+                                                ? AppColors.secondary
+                                                : AppColors.onSurfaceVariant,
                                             fontSize: 12,
                                           ),
                                         ),

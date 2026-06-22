@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
 
 class AddMissionInput extends StatelessWidget {
   final TextEditingController controller;
@@ -32,7 +33,7 @@ class AddMissionInput extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF1E1E1E),
+      backgroundColor: AppColors.surfaceContainer,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -55,7 +56,7 @@ class AddMissionInput extends StatelessWidget {
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: Colors.grey[600],
+                        color: AppColors.onSurfaceVariant,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -64,7 +65,7 @@ class AddMissionInput extends StatelessWidget {
                   const Text(
                     'New Mission',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: AppColors.onSurface,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -72,12 +73,17 @@ class AddMissionInput extends StatelessWidget {
                   const SizedBox(height: 20),
                   TextField(
                     controller: controller,
-                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                    style: const TextStyle(
+                      color: AppColors.onSurface,
+                      fontSize: 16,
+                    ),
                     decoration: InputDecoration(
                       hintText: 'Mission title',
-                      hintStyle: const TextStyle(color: Colors.grey),
+                      hintStyle: const TextStyle(
+                        color: AppColors.onSurfaceVariant,
+                      ),
                       filled: true,
-                      fillColor: Colors.grey[900],
+                      fillColor: AppColors.surfaceContainerLow,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
@@ -87,7 +93,10 @@ class AddMissionInput extends StatelessWidget {
                   const SizedBox(height: 16),
                   const Text(
                     'Category',
-                    style: TextStyle(color: Colors.grey, fontSize: 11),
+                    style: TextStyle(
+                      color: AppColors.onSurfaceVariant,
+                      fontSize: 11,
+                    ),
                   ),
                   const SizedBox(height: 6),
                   SizedBox(
@@ -108,10 +117,12 @@ class AddMissionInput extends StatelessWidget {
                             child: ChoiceChip(
                               label: Text(cat),
                               selected: isSel,
-                              selectedColor: Colors.green,
-                              backgroundColor: Colors.grey[900],
+                              selectedColor: AppColors.primary,
+                              backgroundColor: AppColors.surfaceContainerLow,
                               labelStyle: TextStyle(
-                                color: isSel ? Colors.white : Colors.grey[400],
+                                color: isSel
+                                    ? AppColors.onSurface
+                                    : AppColors.onSurfaceVariant,
                                 fontSize: 12,
                                 fontWeight: isSel
                                     ? FontWeight.bold
@@ -122,7 +133,7 @@ class AddMissionInput extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(8),
                                 side: BorderSide(
                                   color: isSel
-                                      ? Colors.green
+                                      ? AppColors.primary
                                       : Colors.transparent,
                                 ),
                               ),
@@ -137,36 +148,38 @@ class AddMissionInput extends StatelessWidget {
                             label: const Icon(
                               Icons.add,
                               size: 18,
-                              color: Colors.grey,
+                              color: AppColors.onSurfaceVariant,
                             ),
-                            backgroundColor: Colors.grey[900],
+                            backgroundColor: AppColors.surfaceContainerLow,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
-                              side: BorderSide(color: Colors.grey[700]!),
+                              side: BorderSide(color: AppColors.outline),
                             ),
                             onPressed: () {
                               final textController = TextEditingController();
                               showDialog(
                                 context: sheetContext,
                                 builder: (ctx) => AlertDialog(
-                                  backgroundColor: const Color(0xFF1E1E1E),
+                                  backgroundColor: AppColors.surfaceContainer,
                                   title: const Text(
                                     'New Category',
                                     style: TextStyle(
-                                      color: Colors.white,
+                                      color: AppColors.onSurface,
                                       fontSize: 16,
                                     ),
                                   ),
                                   content: TextField(
                                     controller: textController,
-                                    style: const TextStyle(color: Colors.white),
+                                    style: const TextStyle(
+                                      color: AppColors.onSurface,
+                                    ),
                                     decoration: InputDecoration(
                                       hintText: 'Category name',
                                       hintStyle: const TextStyle(
-                                        color: Colors.grey,
+                                        color: AppColors.onSurfaceVariant,
                                       ),
                                       filled: true,
-                                      fillColor: Colors.grey[900],
+                                      fillColor: AppColors.surfaceContainerLow,
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(10),
                                         borderSide: BorderSide.none,
@@ -178,12 +191,14 @@ class AddMissionInput extends StatelessWidget {
                                       onPressed: () => Navigator.pop(ctx),
                                       child: const Text(
                                         'Cancel',
-                                        style: TextStyle(color: Colors.grey),
+                                        style: TextStyle(
+                                          color: AppColors.onSurfaceVariant,
+                                        ),
                                       ),
                                     ),
                                     ElevatedButton(
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.green,
+                                        backgroundColor: AppColors.primary,
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(
                                             8,
@@ -202,7 +217,9 @@ class AddMissionInput extends StatelessWidget {
                                       },
                                       child: const Text(
                                         'Add',
-                                        style: TextStyle(color: Colors.white),
+                                        style: TextStyle(
+                                          color: AppColors.onSurface,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -217,17 +234,20 @@ class AddMissionInput extends StatelessWidget {
                   const SizedBox(height: 16),
                   const Text(
                     'Priority',
-                    style: TextStyle(color: Colors.grey, fontSize: 11),
+                    style: TextStyle(
+                      color: AppColors.onSurfaceVariant,
+                      fontSize: 11,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Row(
                     children: ['High', 'Medium', 'Low'].map((p) {
                       final isSel = selectedPriority == p;
                       final color = p == 'High'
-                          ? Colors.redAccent
+                          ? AppColors.priorityHigh
                           : p == 'Medium'
-                          ? Colors.amber
-                          : Colors.grey;
+                          ? AppColors.priorityMedium
+                          : AppColors.priorityLow;
                       return Expanded(
                         child: Padding(
                           padding: EdgeInsets.only(right: p == 'Low' ? 0 : 8),
@@ -240,10 +260,12 @@ class AddMissionInput extends StatelessWidget {
                               decoration: BoxDecoration(
                                 color: isSel
                                     ? color.withValues(alpha: 0.12)
-                                    : Colors.grey[900],
+                                    : AppColors.surfaceContainerLow,
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
-                                  color: isSel ? color : Colors.grey[800]!,
+                                  color: isSel
+                                      ? color
+                                      : AppColors.surfaceContainerHigh,
                                   width: 1.2,
                                 ),
                               ),
@@ -259,7 +281,7 @@ class AddMissionInput extends StatelessWidget {
                                       border: Border.all(
                                         color: isSel
                                             ? color
-                                            : Colors.grey[500]!,
+                                            : AppColors.onSurfaceVariant,
                                         width: 2,
                                       ),
                                     ),
@@ -270,7 +292,7 @@ class AddMissionInput extends StatelessWidget {
                                               height: 6,
                                               decoration: BoxDecoration(
                                                 shape: BoxShape.circle,
-                                                color: Colors.white,
+                                                color: AppColors.onSurface,
                                               ),
                                             ),
                                           )
@@ -280,7 +302,9 @@ class AddMissionInput extends StatelessWidget {
                                   Text(
                                     p,
                                     style: TextStyle(
-                                      color: isSel ? color : Colors.grey[400],
+                                      color: isSel
+                                          ? color
+                                          : AppColors.onSurfaceVariant,
                                       fontSize: 13,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -298,8 +322,8 @@ class AddMissionInput extends StatelessWidget {
                     width: double.infinity,
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        side: BorderSide(color: Colors.grey[700]!),
+                        foregroundColor: AppColors.onSurface,
+                        side: BorderSide(color: AppColors.outline),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -315,6 +339,7 @@ class AddMissionInput extends StatelessWidget {
                           ),
                         );
                         if (date == null) return;
+                        if (!sheetContext.mounted) return;
                         setSheetState(() => selectedDate = date);
 
                         final start = await showTimePicker(
@@ -324,6 +349,7 @@ class AddMissionInput extends StatelessWidget {
                               const TimeOfDay(hour: 9, minute: 0),
                         );
                         if (start == null) return;
+                        if (!sheetContext.mounted) return;
                         setSheetState(() => selectedStart = start);
 
                         final end = await showTimePicker(
@@ -336,6 +362,7 @@ class AddMissionInput extends StatelessWidget {
                               ),
                         );
                         if (end != null) {
+                          if (!sheetContext.mounted) return;
                           setSheetState(() => selectedEnd = end);
                         }
                       },
@@ -356,7 +383,7 @@ class AddMissionInput extends StatelessWidget {
                     height: 50,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
+                        backgroundColor: AppColors.primary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -378,7 +405,7 @@ class AddMissionInput extends StatelessWidget {
                       child: const Text(
                         'Add Mission',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: AppColors.onSurface,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -426,12 +453,12 @@ class AddMissionInput extends StatelessWidget {
           child: TextField(
             controller: controller,
             onSubmitted: (_) => _showAddSheet(context),
-            style: const TextStyle(color: Colors.white),
+            style: const TextStyle(color: AppColors.onSurface),
             decoration: InputDecoration(
               hintText: 'Enter new mission',
-              hintStyle: const TextStyle(color: Colors.grey),
+              hintStyle: const TextStyle(color: AppColors.onSurfaceVariant),
               filled: true,
-              fillColor: const Color(0xFF1E1E1E),
+              fillColor: AppColors.surfaceContainer,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(15),
                 borderSide: BorderSide.none,
@@ -445,12 +472,12 @@ class AddMissionInput extends StatelessWidget {
           child: ElevatedButton(
             onPressed: () => _showAddSheet(context),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
+              backgroundColor: AppColors.primary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15),
               ),
             ),
-            child: const Icon(Icons.add, color: Colors.white),
+            child: const Icon(Icons.add, color: AppColors.onSurface),
           ),
         ),
       ],

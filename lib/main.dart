@@ -883,6 +883,76 @@ class _RoutineControllerAppState extends State<RoutineControllerApp>
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: AppColors.surface,
+        colorScheme: const ColorScheme.dark(
+          primary: AppColors.primary,
+          onPrimary: AppColors.onPrimary,
+          primaryContainer: AppColors.primaryContainer,
+          onPrimaryContainer: AppColors.onPrimaryContainer,
+          secondary: AppColors.secondary,
+          onSecondary: AppColors.onSecondary,
+          secondaryContainer: AppColors.secondaryContainer,
+          onSecondaryContainer: AppColors.onSecondaryContainer,
+          tertiary: AppColors.tertiary,
+          error: AppColors.error,
+          errorContainer: AppColors.errorContainer,
+          surface: AppColors.surface,
+          onSurface: AppColors.onSurface,
+          onSurfaceVariant: AppColors.onSurfaceVariant,
+          outline: AppColors.outline,
+          outlineVariant: AppColors.outlineVariant,
+        ),
+        textTheme: const TextTheme(
+          displayLarge: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 32,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.02,
+            color: AppColors.onSurface,
+          ),
+          headlineMedium: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.01,
+            color: AppColors.onSurface,
+          ),
+          headlineSmall: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: AppColors.onSurface,
+          ),
+          bodyLarge: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+            color: AppColors.onSurface,
+          ),
+          bodyMedium: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: AppColors.onSurface,
+          ),
+          labelLarge: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.05,
+            color: AppColors.onSurface,
+          ),
+          labelSmall: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.08,
+            color: AppColors.onSurface,
+          ),
+        ),
+      ),
       home: Scaffold(
         backgroundColor: AppColors.background,
         body: isLoading
@@ -891,7 +961,6 @@ class _RoutineControllerAppState extends State<RoutineControllerApp>
               )
             : Column(
                 children: [
-                  // Permission banner — shown until granted or dismissed
                   _buildPermissionBanner(),
                   Expanded(
                     child: Builder(builder: (ctx) => getScreenForIndex(ctx)),
