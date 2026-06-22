@@ -633,16 +633,16 @@ class _RoutineControllerAppState extends State<RoutineControllerApp> {
     }
 
     if (currentIndex == 2) {
-      return ProfileScreen(
-        streak: streak,
-        totalMissions: missions.length,
-        completedMissions: completedCount,
+      return StatsScreen(
+        missions: missions,
       );
     }
 
     if (currentIndex == 3) {
-      return StatsScreen(
-        missions: missions,
+      return ProfileScreen(
+        streak: streak,
+        totalMissions: missions.length,
+        completedMissions: completedCount,
       );
     }
 
