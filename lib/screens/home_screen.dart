@@ -120,6 +120,7 @@ class HomeScreen extends StatelessWidget {
                             color: AppColors.onSurface.withValues(alpha: 0.08),
                           ),
                         ),
+                        clipBehavior: Clip.antiAlias,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -135,16 +136,21 @@ class HomeScreen extends StatelessWidget {
                             const SizedBox(height: 8),
                             Row(
                               children: [
-                                Text(
-                                  "${(_progressPercent * 100).toStringAsFixed(0)}%",
-                                  style: const TextStyle(
-                                    color: AppColors.primary,
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: -0.02,
+                                Flexible(
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      "${(_progressPercent * 100).toStringAsFixed(0)}%",
+                                      style: const TextStyle(
+                                        color: AppColors.primary,
+                                        fontSize: 32,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: -0.02,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                                const Spacer(),
+                                const SizedBox(width: 8),
                                 Container(
                                   width: 48,
                                   height: 6,
@@ -154,7 +160,10 @@ class HomeScreen extends StatelessWidget {
                                   ),
                                   child: FractionallySizedBox(
                                     alignment: Alignment.centerLeft,
-                                    widthFactor: _progressPercent,
+                                    widthFactor: _progressPercent.clamp(
+                                      0.0,
+                                      1.0,
+                                    ),
                                     child: Container(
                                       decoration: BoxDecoration(
                                         color: AppColors.primary,
@@ -182,6 +191,7 @@ class HomeScreen extends StatelessWidget {
                             color: AppColors.onSurface.withValues(alpha: 0.08),
                           ),
                         ),
+                        clipBehavior: Clip.antiAlias,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -198,13 +208,18 @@ class HomeScreen extends StatelessWidget {
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                Text(
-                                  "$_todayBlockCount",
-                                  style: const TextStyle(
-                                    color: AppColors.secondary,
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: -0.02,
+                                Flexible(
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      "$_todayBlockCount",
+                                      style: const TextStyle(
+                                        color: AppColors.secondary,
+                                        fontSize: 32,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: -0.02,
+                                      ),
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 6),
@@ -232,149 +247,167 @@ class HomeScreen extends StatelessWidget {
 
                 // Filter Row
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      "Today's Schedule",
-                      style: TextStyle(
-                        color: AppColors.onSurface.withValues(alpha: 0.9),
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
+                    Expanded(
+                      child: Text(
+                        "Today's Schedule",
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: AppColors.onSurface.withValues(alpha: 0.9),
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceContainerHigh,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: AppColors.onSurface.withValues(alpha: 0.06),
-                        ),
-                      ),
-                      child: PopupMenuButton<String>(
-                        initialValue: selectedCategoryFilter,
-                        onSelected: (v) => onCategoryFilterChanged(v),
-                        offset: const Offset(0, 40),
-                        color: AppColors.surfaceContainer,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(
-                            color: AppColors.onSurface.withValues(alpha: 0.06),
-                          ),
-                        ),
-                        itemBuilder: (context) =>
-                            ['All', 'General', 'Work', 'Study', 'Fitness'].map((
-                              v,
-                            ) {
-                              final isSel = selectedCategoryFilter == v;
-                              return PopupMenuItem<String>(
-                                value: v,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 8,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: isSel
-                                        ? AppColors.primary.withValues(
-                                            alpha: 0.12,
-                                          )
-                                        : Colors.transparent,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Container(
-                                        width: 16,
-                                        height: 16,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: isSel
-                                              ? AppColors.primary
-                                              : Colors.transparent,
-                                          border: Border.all(
-                                            color: isSel
-                                                ? AppColors.primary
-                                                : AppColors.onSurfaceVariant,
-                                            width: 2,
-                                          ),
-                                        ),
-                                        child: isSel
-                                            ? const Icon(
-                                                Icons.check,
-                                                color: Colors.white,
-                                                size: 10,
-                                              )
-                                            : null,
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Text(
-                                        v,
-                                        style: TextStyle(
-                                          color: isSel
-                                              ? AppColors.primary
-                                              : AppColors.onSurfaceVariant,
-                                          fontWeight: isSel
-                                              ? FontWeight.bold
-                                              : FontWeight.normal,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.filter_list_rounded,
-                              color: AppColors.primary,
-                              size: 18,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              selectedCategoryFilter,
-                              style: const TextStyle(
-                                color: AppColors.primary,
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Icon(
-                              Icons.keyboard_arrow_down_rounded,
-                              color: AppColors.primary.withValues(alpha: 0.7),
-                              size: 18,
-                            ),
-                          ],
-                        ),
-                      ),
+                    const SizedBox(width: 8),
+                    _FilterChip(
+                      selected: selectedCategoryFilter,
+                      onChanged: onCategoryFilterChanged,
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
 
-                MissionList(
-                  missions: missions,
-                  onDelete: onDelete,
-                  onToggle: onToggle,
-                  onEdit: onEdit,
+                RepaintBoundary(
+                  child: MissionList(
+                    missions: missions,
+                    onDelete: onDelete,
+                    onToggle: onToggle,
+                    onEdit: onEdit,
+                  ),
                 ),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// Small filter chip — stateless, no PopupMenuButton freeze
+// ─────────────────────────────────────────────
+class _FilterChip extends StatelessWidget {
+  final String selected;
+  final ValueChanged<String> onChanged;
+
+  const _FilterChip({
+    required this.selected,
+    required this.onChanged,
+  });
+
+  static const _options = ['All', 'General', 'Work', 'Study', 'Fitness'];
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: AppColors.onSurface.withValues(alpha: 0.06),
+        ),
+      ),
+      child: GestureDetector(
+        onTap: () => _showPicker(context),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.filter_list_rounded,
+                color: AppColors.primary,
+                size: 18,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                selected,
+                style: const TextStyle(
+                  color: AppColors.primary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: AppColors.primary.withValues(alpha: 0.7),
+                size: 18,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showPicker(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: AppColors.surfaceContainer,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          contentPadding: const EdgeInsets.symmetric(vertical: 8),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: _options.map((v) {
+              final isSel = selected == v;
+              return InkWell(
+                onTap: () {
+                  onChanged(v);
+                  Navigator.pop(ctx);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 14,
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 18,
+                        height: 18,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isSel
+                              ? AppColors.primary
+                              : Colors.transparent,
+                          border: Border.all(
+                            color: isSel
+                                ? AppColors.primary
+                                : AppColors.onSurfaceVariant,
+                            width: 2,
+                          ),
+                        ),
+                        child: isSel
+                            ? const Icon(Icons.check, color: Colors.white, size: 11)
+                            : null,
+                      ),
+                      const SizedBox(width: 14),
+                      Text(
+                        v,
+                        style: TextStyle(
+                          color: isSel
+                              ? AppColors.primary
+                              : AppColors.onSurfaceVariant,
+                          fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        );
+      },
     );
   }
 }

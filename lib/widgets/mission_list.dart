@@ -92,18 +92,10 @@ class MissionList extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (todayMissions.isNotEmpty) ...[
-                  const Text(
-                    "Today's Schedule",
-                    style: TextStyle(
-                      color: AppColors.onSurface,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
                   ...todayMissions.map((mission) {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 10),
+                      key: ValueKey('t_${mission.id}'),
                       child: MissionTile(
                         mission: mission,
                         onDelete: () => onDelete(mission.id),
@@ -127,6 +119,7 @@ class MissionList extends StatelessWidget {
                   ...upcomingMissions.map((mission) {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 10),
+                      key: ValueKey('u_${mission.id}'),
                       child: MissionTile(
                         mission: mission,
                         onDelete: () => onDelete(mission.id),
@@ -150,6 +143,7 @@ class MissionList extends StatelessWidget {
                   ...completedMissions.map((mission) {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 10),
+                      key: ValueKey('c_${mission.id}'),
                       child: MissionTile(
                         mission: mission,
                         onDelete: () => onDelete(mission.id),

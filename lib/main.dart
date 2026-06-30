@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -70,6 +71,45 @@ class _RoutineControllerAppState extends State<RoutineControllerApp>
 
   final uuid = const Uuid();
 
+  // ── Cached computed values (rebuilt only when missions change) ──
+  int _cachedOverdueCount = 0;
+  int _cachedDueTodayCount = 0;
+  int _cachedHighPriorityCount = 0;
+  int _cachedCompletedCount = 0;
+  List<Mission> _cachedFilteredMissions = [];
+
+
+  void _updateCache() {
+    final now = DateTime.now();
+    _cachedOverdueCount = 0;
+    _cachedDueTodayCount = 0;
+    _cachedHighPriorityCount = 0;
+    _cachedCompletedCount = 0;
+
+    for (final m in missions) {
+      if (m.isCompleted) {
+        _cachedCompletedCount++;
+      } else {
+        if (m.dueDate != null && m.dueDate!.isBefore(now)) {
+          _cachedOverdueCount++;
+        }
+        if (m.priority == 'High') {
+          _cachedHighPriorityCount++;
+        }
+      }
+      if (m.dueDate != null &&
+          m.dueDate!.year == now.year &&
+          m.dueDate!.month == now.month &&
+          m.dueDate!.day == now.day) {
+        _cachedDueTodayCount++;
+      }
+    }
+
+    _cachedFilteredMissions = selectedCategoryFilter == 'All'
+        ? missions
+        : missions.where((m) => m.category == selectedCategoryFilter).toList();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -82,6 +122,7 @@ class _RoutineControllerAppState extends State<RoutineControllerApp>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _saveDebounce?.cancel();
     missionController.dispose();
     super.dispose();
   }
@@ -97,6 +138,7 @@ class _RoutineControllerAppState extends State<RoutineControllerApp>
 
   // ─────────────────────────────────────────────
   // LOCK STATUS — polls every second while locked
+  // Only the lock screen timer needs this rebuild
   // ─────────────────────────────────────────────
   Future<void> _checkLockStatus() async {
     final locked = await PenaltyService.isAppLocked();
@@ -139,39 +181,13 @@ class _RoutineControllerAppState extends State<RoutineControllerApp>
   }
 
   // ─────────────────────────────────────────────
-  // COMPUTED PROPERTIES
+  // COMPUTED PROPERTIES (cached)
   // ─────────────────────────────────────────────
-  int get overdueCount => missions
-      .where(
-        (m) =>
-            m.dueDate != null &&
-            m.dueDate!.isBefore(DateTime.now()) &&
-            !m.isCompleted,
-      )
-      .length;
-
-  int get dueTodayCount {
-    final today = DateTime.now();
-    return missions
-        .where(
-          (m) =>
-              m.dueDate != null &&
-              m.dueDate!.year == today.year &&
-              m.dueDate!.month == today.month &&
-              m.dueDate!.day == today.day,
-        )
-        .length;
-  }
-
-  int get highPriorityCount =>
-      missions.where((m) => m.priority == 'High' && !m.isCompleted).length;
-
-  int get completedCount => missions.where((m) => m.isCompleted).length;
-
-  List<Mission> get categoryFilteredMissions {
-    if (selectedCategoryFilter == 'All') return missions;
-    return missions.where((m) => m.category == selectedCategoryFilter).toList();
-  }
+  int get overdueCount => _cachedOverdueCount;
+  int get dueTodayCount => _cachedDueTodayCount;
+  int get highPriorityCount => _cachedHighPriorityCount;
+  int get completedCount => _cachedCompletedCount;
+  List<Mission> get categoryFilteredMissions => _cachedFilteredMissions;
 
   // ─────────────────────────────────────────────
   // STREAK
@@ -259,21 +275,30 @@ class _RoutineControllerAppState extends State<RoutineControllerApp>
   }
 
   // ─────────────────────────────────────────────
-  // SAVE MISSIONS
+  // SAVE MISSIONS (debounced — avoids redundant disk writes)
   // ─────────────────────────────────────────────
+  Timer? _saveDebounce;
+
   Future<void> saveMissions() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
-      'missions',
-      missions.map((m) => jsonEncode(m.toJson())).toList(),
-    );
-    await prefs.setInt('streak', streak);
-    if (lastCompletedDate != null) {
-      await prefs.setString(
-        'lastCompletedDate',
-        lastCompletedDate!.toIso8601String(),
-      );
-    }
+    _saveDebounce?.cancel();
+    _saveDebounce = Timer(const Duration(milliseconds: 300), () async {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setStringList(
+          'missions',
+          missions.map((m) => jsonEncode(m.toJson())).toList(),
+        );
+        await prefs.setInt('streak', streak);
+        if (lastCompletedDate != null) {
+          await prefs.setString(
+            'lastCompletedDate',
+            lastCompletedDate!.toIso8601String(),
+          );
+        }
+      } catch (_) {
+        // Silently handle persistence errors
+      }
+    });
   }
 
   // ─────────────────────────────────────────────
@@ -305,13 +330,17 @@ class _RoutineControllerAppState extends State<RoutineControllerApp>
   // START MONITORING a mission's time block
   // Wires mission into notification + penalty system
   // ─────────────────────────────────────────────
-  void _startMonitoringMission(Mission mission) {
+  Future<void> _startMonitoringMission(Mission mission) async {
     if (mission.startTime == null) return;
-    TimeBlockService.startTimeBlockMonitoring(
-      missionId: mission.id,
-      missionTitle: mission.title,
-      startTime: mission.startTime!,
-    );
+    try {
+      await TimeBlockService.startTimeBlockMonitoring(
+        missionId: mission.id,
+        missionTitle: mission.title,
+        startTime: mission.startTime!,
+      );
+    } catch (_) {
+      // Silently handle — monitoring is best-effort
+    }
   }
 
   // ─────────────────────────────────────────────
@@ -328,11 +357,7 @@ class _RoutineControllerAppState extends State<RoutineControllerApp>
     final baseDate = dueDate ?? DateTime.now();
     final parsedStart = _combineDateTime(baseDate, start);
     final parsedEnd = _combineDateTime(baseDate, end);
-    final effectiveStart =
-        parsedStart ??
-        (dueDate != null
-            ? DateTime(dueDate.year, dueDate.month, dueDate.day, 9, 0)
-            : null);
+    final effectiveStart = parsedStart;
 
     final newMission = Mission(
       id: uuid.v4(),
@@ -346,11 +371,12 @@ class _RoutineControllerAppState extends State<RoutineControllerApp>
 
     setState(() => missions.add(newMission));
 
+    // Fire-and-forget: don't block the UI
     if (effectiveStart != null) {
-      _startMonitoringMission(newMission);
+      unawaited(_startMonitoringMission(newMission));
     }
+    unawaited(saveMissions());
 
-    saveMissions();
     FocusScope.of(context).unfocus();
   }
 
@@ -607,6 +633,7 @@ class _RoutineControllerAppState extends State<RoutineControllerApp>
   // SCREEN ROUTER
   // ─────────────────────────────────────────────
   Widget getScreenForIndex(BuildContext context) {
+    _updateCache();
     if (currentIndex == 0) {
       return HomeScreen(
         streak: streak,

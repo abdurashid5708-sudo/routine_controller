@@ -40,6 +40,74 @@ class AddMissionInput extends StatelessWidget {
       builder: (sheetContext) {
         return StatefulBuilder(
           builder: (context, setSheetState) {
+            Widget scheduleRow({
+              required IconData icon,
+              required String label,
+              required String value,
+              required VoidCallback onSet,
+              VoidCallback? onClear,
+            }) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                child: Row(
+                  children: [
+                    Icon(icon, size: 16, color: AppColors.onSurfaceVariant),
+                    const SizedBox(width: 10),
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        color: AppColors.onSurfaceVariant,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        value,
+                        style: TextStyle(
+                          color: value == 'Not set'
+                              ? AppColors.onSurfaceVariant.withValues(alpha: 0.5)
+                              : AppColors.onSurface,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 28,
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        onPressed: onSet,
+                        child: Text(
+                          value == 'Not set' ? 'Set' : 'Change',
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (onClear != null)
+                      SizedBox(
+                        height: 28,
+                        width: 28,
+                        child: IconButton(
+                          padding: EdgeInsets.zero,
+                          icon: const Icon(Icons.close, size: 14),
+                          style: IconButton.styleFrom(
+                            foregroundColor: AppColors.onSurfaceVariant,
+                          ),
+                          onPressed: onClear,
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            }
+
             return Padding(
               padding: EdgeInsets.only(
                 left: 20,
@@ -47,7 +115,8 @@ class AddMissionInput extends StatelessWidget {
                 top: 20,
                 bottom: MediaQuery.of(context).viewInsets.bottom + 20,
               ),
-              child: Column(
+              child: SingleChildScrollView(
+                child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -318,63 +387,117 @@ class AddMissionInput extends StatelessWidget {
                     }).toList(),
                   ),
                   const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.onSurface,
-                        side: BorderSide(color: AppColors.outline),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      onPressed: () async {
-                        final date = await showDatePicker(
-                          context: sheetContext,
-                          initialDate: selectedDate ?? DateTime.now(),
-                          firstDate: DateTime.now(),
-                          lastDate: DateTime.now().add(
-                            const Duration(days: 365),
-                          ),
-                        );
-                        if (date == null) return;
-                        if (!sheetContext.mounted) return;
-                        setSheetState(() => selectedDate = date);
-
-                        final start = await showTimePicker(
-                          context: sheetContext,
-                          initialTime:
-                              selectedStart ??
-                              const TimeOfDay(hour: 9, minute: 0),
-                        );
-                        if (start == null) return;
-                        if (!sheetContext.mounted) return;
-                        setSheetState(() => selectedStart = start);
-
-                        final end = await showTimePicker(
-                          context: sheetContext,
-                          initialTime:
-                              selectedEnd ??
-                              TimeOfDay(
-                                hour: start.hour + 1,
-                                minute: start.minute,
+                  const Text(
+                    'Schedule (optional)',
+                    style: TextStyle(
+                      color: AppColors.onSurfaceVariant,
+                      fontSize: 11,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      children: [
+                        // ── Date row ──
+                        scheduleRow(
+                          icon: Icons.calendar_today,
+                          label: 'Date',
+                          value: selectedDate != null
+                              ? '${selectedDate!.day}.${selectedDate!.month}.${selectedDate!.year}'
+                              : 'Not set',
+                          onSet: () async {
+                            final date = await showDatePicker(
+                              context: sheetContext,
+                              initialDate: selectedDate ?? DateTime.now(),
+                              firstDate: DateTime.now(),
+                              lastDate: DateTime.now().add(
+                                const Duration(days: 365),
                               ),
-                        );
-                        if (end != null) {
-                          if (!sheetContext.mounted) return;
-                          setSheetState(() => selectedEnd = end);
-                        }
-                      },
-                      child: Text(
-                        _formatSheetDate(
-                          selectedDate,
-                          selectedStart,
-                          selectedEnd,
-                          sheetContext,
+                            );
+                            if (date == null) return;
+                            if (!sheetContext.mounted) return;
+                            setSheetState(() {
+                              selectedDate = date;
+                              selectedStart = null;
+                              selectedEnd = null;
+                            });
+                          },
+                          onClear: selectedDate != null
+                              ? () => setSheetState(() {
+                                    selectedDate = null;
+                                    selectedStart = null;
+                                    selectedEnd = null;
+                                  })
+                              : null,
                         ),
-                        style: const TextStyle(fontSize: 13),
-                      ),
+                        // ── Start time row (requires date) ──
+                        if (selectedDate != null) ...[
+                          const Divider(
+                            height: 1,
+                            color: AppColors.surfaceContainerHigh,
+                          ),
+                          scheduleRow(
+                            icon: Icons.schedule,
+                            label: 'Start time',
+                            value: selectedStart != null
+                                ? selectedStart!.format(sheetContext)
+                                : 'Not set',
+                            onSet: () async {
+                              final picked = await showTimePicker(
+                                context: sheetContext,
+                                initialTime:
+                                    selectedStart ??
+                                    const TimeOfDay(hour: 9, minute: 0),
+                              );
+                              if (picked == null) return;
+                              if (!sheetContext.mounted) return;
+                              setSheetState(() => selectedStart = picked);
+                            },
+                            onClear: selectedStart != null
+                                ? () => setSheetState(
+                                      () => selectedStart = null,
+                                    )
+                                : null,
+                          ),
+                        ],
+                        // ── End time row (requires start) ──
+                        if (selectedStart != null) ...[
+                          const Divider(
+                            height: 1,
+                            color: AppColors.surfaceContainerHigh,
+                          ),
+                          scheduleRow(
+                            icon: Icons.schedule,
+                            label: 'End time',
+                            value: selectedEnd != null
+                                ? selectedEnd!.format(sheetContext)
+                                : 'Not set',
+                            onSet: () async {
+                              final picked = await showTimePicker(
+                                context: sheetContext,
+                                initialTime:
+                                    selectedEnd ??
+                                    TimeOfDay(
+                                      hour: selectedStart!.hour + 1,
+                                      minute: selectedStart!.minute,
+                                    ),
+                              );
+                              if (picked == null) return;
+                              if (!sheetContext.mounted) return;
+                              setSheetState(() => selectedEnd = picked);
+                            },
+                            onClear: selectedEnd != null
+                                ? () => setSheetState(
+                                      () => selectedEnd = null,
+                                    )
+                                : null,
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -414,35 +537,12 @@ class AddMissionInput extends StatelessWidget {
                   ),
                 ],
               ),
-            );
+            ),
+          );
           },
         );
       },
     );
-  }
-
-  String _formatSheetDate(
-    DateTime? date,
-    TimeOfDay? start,
-    TimeOfDay? end,
-    BuildContext context,
-  ) {
-    if (date == null && start == null && end == null) {
-      return '📅 Set Date & Time (optional)';
-    }
-    final dateStr = date != null
-        ? '${date.day}.${date.month}.${date.year}'
-        : '';
-    final startStr = start != null ? start.format(context) : '';
-    final endStr = end != null ? end.format(context) : '';
-    if (dateStr.isNotEmpty && startStr.isNotEmpty && endStr.isNotEmpty) {
-      return '📅 $dateStr  $startStr - $endStr';
-    }
-    if (dateStr.isNotEmpty && startStr.isNotEmpty) {
-      return '📅 $dateStr  $startStr';
-    }
-    if (dateStr.isNotEmpty) return '📅 $dateStr';
-    return '📅 $startStr - $endStr';
   }
 
   @override

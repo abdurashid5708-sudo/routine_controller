@@ -82,6 +82,7 @@ class NotificationService {
   // ---------------------------------------------------------------------------
   // SCHEDULE ESCALATING NOTIFICATIONS
   // Hands off to Android OS - survives app close
+  // If start time is in the recent past, fires immediately instead
   // ---------------------------------------------------------------------------
   static Future<void> scheduleEscalatingNotifications({
     required String missionId,
@@ -90,57 +91,80 @@ class NotificationService {
   }) async {
     await cancelMissionNotifications(missionId);
 
-    final now = DateTime.now();
     final baseId = missionId.hashCode.abs() % 100000;
     final tzStart = tz.TZDateTime.from(startTime, tz.local);
     final tzNow = tz.TZDateTime.now(tz.local);
 
-    // --- 5 min before ---
-    final fiveBefore = tzStart.subtract(const Duration(minutes: 5));
-    if (fiveBefore.isAfter(tzNow)) {
-      await _scheduleOne(
-        id: baseId + 1,
-        title: '⏳ Starting soon: $missionTitle',
-        body: 'Get ready! Your time block starts in 5 minutes.',
-        scheduledDate: fiveBefore,
-        urgent: false,
-      );
+    // Helper: schedule via OS (future) OR fire immediately (recent past)
+    Future<void> scheduleOrFire({
+      required int id,
+      required String title,
+      required String body,
+      required tz.TZDateTime scheduledDate,
+      required bool urgent,
+      Duration maxPast = Duration.zero,
+    }) async {
+      final diff = scheduledDate.difference(tzNow);
+      if (diff > Duration.zero) {
+        // Future — schedule via OS (survives app close)
+        await _scheduleOne(
+          id: id,
+          title: title,
+          body: body,
+          scheduledDate: scheduledDate,
+          urgent: urgent,
+        );
+      } else if (diff > -maxPast) {
+        // Recent past — fire immediately
+        await showInstant(
+          id: id,
+          title: title,
+          body: body,
+          urgent: urgent,
+        );
+      }
+      // else: too far in the past, skip
     }
+
+    // --- 5 min before ---
+    await scheduleOrFire(
+      id: baseId + 1,
+      title: '⏳ Starting soon: $missionTitle',
+      body: 'Get ready! Your time block starts in 5 minutes.',
+      scheduledDate: tzStart.subtract(const Duration(minutes: 5)),
+      urgent: false,
+      maxPast: const Duration(seconds: 30),
+    );
 
     // --- At start time ---
-    if (startTime.isAfter(now)) {
-      await _scheduleOne(
-        id: baseId + 2,
-        title: '🔥 START NOW: $missionTitle',
-        body: 'Your time block has begun. Tap to mark as started.',
-        scheduledDate: tzStart,
-        urgent: true,
-      );
-    }
+    await scheduleOrFire(
+      id: baseId + 2,
+      title: '⏰ Time for: $missionTitle',
+      body: 'It\'s time to start this mission!',
+      scheduledDate: tzStart,
+      urgent: true,
+      maxPast: const Duration(minutes: 1),
+    );
 
     // --- 5 min after ---
-    final fiveAfter = tzStart.add(const Duration(minutes: 5));
-    if (fiveAfter.isAfter(tzNow)) {
-      await _scheduleOne(
-        id: baseId + 3,
-        title: '⚠️ Still waiting: $missionTitle',
-        body: 'You haven\'t started yet. Don\'t lose your streak!',
-        scheduledDate: fiveAfter,
-        urgent: true,
-      );
-    }
+    await scheduleOrFire(
+      id: baseId + 3,
+      title: '⚠️ Still waiting: $missionTitle',
+      body: 'You haven\'t started yet. Don\'t lose your streak!',
+      scheduledDate: tzStart.add(const Duration(minutes: 5)),
+      urgent: true,
+      maxPast: const Duration(seconds: 30),
+    );
 
     // --- 15 min after: last warning ---
-    final fifteenAfter = tzStart.add(const Duration(minutes: 15));
-    if (fifteenAfter.isAfter(tzNow)) {
-      await _scheduleOne(
-        id: baseId + 4,
-        title: '🚨 FINAL WARNING: $missionTitle',
-        body: 'Penalty in 15 minutes if you don\'t start. Lock incoming!',
-        scheduledDate: fifteenAfter,
-        urgent: true,
-      );
-    }
+    await scheduleOrFire(
+      id: baseId + 4,
+      title: '🚨 FINAL WARNING: $missionTitle',
+      body: 'Penalty in 15 minutes if you don\'t start. Lock incoming!',
+      scheduledDate: tzStart.add(const Duration(minutes: 15)),
+      urgent: true,
+      maxPast: const Duration(seconds: 30),
+    );
   }
 
   // ---------------------------------------------------------------------------
